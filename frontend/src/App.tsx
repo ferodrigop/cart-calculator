@@ -1,9 +1,15 @@
+import { QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider } from "react-router-dom";
+
+import { Toaster } from "@/components/ui/sonner";
+import { queryClient } from "@/lib/queryClient";
+import { router } from "@/routes";
+
 export default function App() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="container py-16">
-        <h1 className="text-3xl font-semibold tracking-tight">cart-calculator</h1>
-      </div>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <Toaster richColors closeButton />
+    </QueryClientProvider>
   );
 }
