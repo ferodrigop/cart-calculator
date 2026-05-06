@@ -8,7 +8,7 @@ from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def client() -> AsyncIterator[AsyncClient]:
     async with LifespanManager(app):
         transport = ASGITransport(app=app)

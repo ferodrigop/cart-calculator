@@ -7,13 +7,20 @@ from fastapi import FastAPI
 
 from app.api import api_router
 from app.core.config import get_settings
-from app.core.db import dispose_engine
+from app.core.db import build_engine, build_session_maker
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    yield
-    await dispose_engine()
+    settings = get_settings()
+    engine = build_engine(settings)
+    session_maker = build_session_maker(engine)
+    app.state.engine = engine
+    app.state.session_maker = session_maker
+    try:
+        yield
+    finally:
+        await engine.dispose()
 
 
 def create_app() -> FastAPI:

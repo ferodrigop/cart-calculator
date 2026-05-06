@@ -2,7 +2,7 @@
 
 Conventions for `pydantic-settings`-based configuration.
 
-1. **One `Settings` class in `app/config.py`.** Use
+1. **One `Settings` class in `app/core/config.py`.** Use
    `model_config = SettingsConfigDict(env_file=(".env", ".env.local"), env_file_encoding="utf-8", extra="ignore", case_sensitive=False)`.
    Later files in the tuple override earlier ones — that's the layering strategy.
 2. **`SecretStr` for every secret.** JWT secret, DB password, Redis URL with password —

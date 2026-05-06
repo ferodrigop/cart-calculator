@@ -15,7 +15,7 @@ COPY uv.lock* ./
 RUN uv sync --frozen --no-install-project --no-dev || uv sync --no-install-project --no-dev
 
 COPY . .
-RUN uv sync --no-dev || uv sync --no-dev
+RUN uv sync --no-dev
 
 FROM python:3.12-slim AS runtime
 
@@ -25,7 +25,7 @@ ENV PATH="/opt/venv/bin:$PATH" \
 
 RUN useradd --uid 1000 --create-home app \
     && mkdir -p /app \
-    && chown -R app:app /app /opt 2>/dev/null || true
+    && chown app:app /app
 
 WORKDIR /app
 
