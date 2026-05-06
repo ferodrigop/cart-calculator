@@ -57,6 +57,9 @@ export function CartPage() {
 
   const onSubmit = (values: CartValues) => {
     checkout.mutate(values, {
+      onSuccess: (breakdown) => {
+        toast.success(`Total: ${formatCurrency(breakdown.total)}`);
+      },
       onError: (error) => {
         const message =
           error instanceof ApiError && error.status === 401
@@ -234,7 +237,12 @@ export function CartPage() {
             </CardContent>
           </Card>
 
-          {checkout.data && <CheckoutSummary breakdown={checkout.data} />}
+          {(checkout.data || checkout.isPending) && (
+            <CheckoutSummary
+              breakdown={checkout.data ?? null}
+              isPending={checkout.isPending}
+            />
+          )}
         </aside>
       </div>
     </main>
