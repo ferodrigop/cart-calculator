@@ -6,10 +6,10 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
-    AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import Settings
 
