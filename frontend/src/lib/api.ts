@@ -56,7 +56,8 @@ type ApiFetchOptions = Omit<RequestInit, "body"> & {
 
 async function send(path: string, options: ApiFetchOptions, token: string | null): Promise<Response> {
   const headers = new Headers(options.headers);
-  if (options.body !== undefined && !headers.has("Content-Type")) {
+  const isForm = options.body instanceof URLSearchParams;
+  if (options.body !== undefined && !isForm && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   if (!headers.has("Accept")) {
@@ -66,10 +67,19 @@ async function send(path: string, options: ApiFetchOptions, token: string | null
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  let body: BodyInit | undefined;
+  if (options.body === undefined) {
+    body = undefined;
+  } else if (isForm) {
+    body = options.body as URLSearchParams;
+  } else {
+    body = JSON.stringify(options.body);
+  }
+
   return fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body,
   });
 }
 
