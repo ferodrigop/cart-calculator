@@ -7,6 +7,7 @@ SQLModel.metadata.naming_convention = {
     "pk": "pk_%(table_name)s",
 }
 
-from app.models.user import User  # noqa: E402  -- registers User with SQLModel.metadata
+from app.models.checkout import Checkout  # noqa: E402
+from app.models.user import User  # noqa: E402
 
-__all__ = ["User"]
+__all__ = ["Checkout", "User"]

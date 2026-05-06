@@ -15,15 +15,16 @@ os.environ["JWT__ACCESS_TTL_SECONDS"] = "900"
 os.environ["JWT__REFRESH_TTL_SECONDS"] = "604800"
 
 from collections.abc import AsyncIterator
+from uuid import uuid4
 
 import fakeredis.aioredis  # type: ignore[import-untyped]
 import pytest
-from app.api.deps import oauth2_scheme  # noqa: F401  -- ensures schema registers
+from app.api.deps import get_current_user, oauth2_scheme  # noqa: F401  -- ensures schema registers
 from app.core.config import get_settings
 from app.core.db import get_session
 from app.core.redis import get_redis
 from app.main import app
-from app.models import User  # noqa: F401  -- registers User table
+from app.models import User
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event
@@ -137,3 +138,75 @@ async def register_and_login(
 ) -> dict[str, str]:
     await register(client, email, password)
     return await login(client, email, password)
+
+
+@pytest.fixture
+async def test_user(session: AsyncSession) -> User:
+    user = User(
+        email=f"test-{uuid4().hex[:8]}@example.com",
+        password_hash="not-used-in-this-test",
+    )
+    session.add(user)
+    await session.flush()
+    return user
+
+
+@pytest.fixture
+async def authed_client(
+    session: AsyncSession,
+    fake_redis: fakeredis.aioredis.FakeRedis,
+    test_user: User,
+) -> AsyncIterator[AsyncClient]:
+    async def _override_session() -> AsyncIterator[AsyncSession]:
+        yield session
+
+    async def _override_redis() -> fakeredis.aioredis.FakeRedis:
+        return fake_redis
+
+    async def _override_current_user() -> User:
+        return test_user
+
+    app.dependency_overrides[get_session] = _override_session
+    app.dependency_overrides[get_redis] = _override_redis
+    app.dependency_overrides[get_current_user] = _override_current_user
+
+    limiter = app.state.limiter
+    storage = limiter.limiter.storage
+    if hasattr(storage, "reset"):
+        storage.reset()
+
+    try:
+        async with LifespanManager(app):
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as ac:
+                yield ac
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def unauth_client(
+    session: AsyncSession,
+    fake_redis: fakeredis.aioredis.FakeRedis,
+) -> AsyncIterator[AsyncClient]:
+    async def _override_session() -> AsyncIterator[AsyncSession]:
+        yield session
+
+    async def _override_redis() -> fakeredis.aioredis.FakeRedis:
+        return fake_redis
+
+    app.dependency_overrides[get_session] = _override_session
+    app.dependency_overrides[get_redis] = _override_redis
+
+    limiter = app.state.limiter
+    storage = limiter.limiter.storage
+    if hasattr(storage, "reset"):
+        storage.reset()
+
+    try:
+        async with LifespanManager(app):
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as ac:
+                yield ac
+    finally:
+        app.dependency_overrides.clear()
