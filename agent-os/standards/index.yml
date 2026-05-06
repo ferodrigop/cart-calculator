@@ -1,0 +1,32 @@
+# Agent OS Standards Index
+root:
+  linting:
+    description: Ruff configuration, lint rule selection, formatter usage, per-file ignores, pre-commit/CI wiring
+
+backend:
+  alembic:
+    description: Migration env.py setup, naming conventions, autogenerate against Postgres, startup migration strategy
+  auth:
+    description: OAuth2 password flow, Argon2 hashing, Authlib JWT encoding, refresh token rotation, secret management
+  fastapi:
+    description: App structure by domain, lifespan startup/shutdown, Annotated dependencies, exception handling, response models
+  rate-limiting:
+    description: Slowapi with Redis moving-window, composite user/IP key function, proxy header handling, per-endpoint tiers, caching client
+  settings:
+    description: pydantic-settings layered env files, SecretStr for secrets, nested groups, validators, lru_cache pattern
+  sqlmodel:
+    description: Async engine and session, separation of DB models from API schemas, session dependency, typed exec(), eager loading
+  testing:
+    description: pytest-asyncio auto mode, AsyncClient with ASGITransport, SAVEPOINT-per-test isolation, dependency overrides, factories
+
+frontend:
+  shadcn-tailwind:
+    description: shadcn CLI install, theming via CSS variables, react-hook-form + zod forms, composition over forking, cn() helper
+  vite-react:
+    description: Strict TypeScript config, absolute import aliases, VITE_ env vars, TanStack Query, feature-co-located hooks
+
+infra:
+  docker:
+    description: Multi-stage builds, non-root user, layer ordering, HEALTHCHECK directives, .dockerignore hygiene
+  nginx:
+    description: Upstream with least_conn, forwarded headers, explicit timeouts, health route, gzip and body size caps
