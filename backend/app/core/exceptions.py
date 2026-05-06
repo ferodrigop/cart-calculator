@@ -28,6 +28,11 @@ class InvalidTokenError(AuthError):
     detail = "invalid token"
 
 
+class TokenExpiredError(AuthError):
+    status_code = 401
+    detail = "token expired"
+
+
 class RefreshTokenReusedError(AuthError):
     status_code = 401
     detail = "refresh token already used"

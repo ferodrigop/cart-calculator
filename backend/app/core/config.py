@@ -30,6 +30,7 @@ class RateLimitSettings(BaseModel):
     default: str = "300/minute"
     auth_login: str = "5/minute"
     auth_refresh: str = "5/minute"
+    auth_register: str = "5/minute"
 
 
 class PasswordSettings(BaseModel):

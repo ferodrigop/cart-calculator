@@ -3,12 +3,13 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Column, DateTime, String, Uuid, func
+from sqlalchemy import CheckConstraint, Column, DateTime, String, Uuid, func
 from sqlmodel import Field, SQLModel
 
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
+    __table_args__ = (CheckConstraint("email = lower(email)", name="ck_users_email_lowercase"),)
 
     id: UUID = Field(
         default_factory=uuid4,

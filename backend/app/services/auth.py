@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from uuid import UUID
 
 from redis.asyncio import Redis
@@ -16,6 +17,7 @@ from app.core.exceptions import (
     UserNotFoundError,
 )
 from app.core.security import (
+    DUMMY_PASSWORD_HASH,
     decode_token,
     hash_password,
     mint_access,
@@ -60,8 +62,12 @@ async def register(session: AsyncSession, email: str, password: str) -> User:
 
 
 async def authenticate(session: AsyncSession, email: str, password: str) -> User:
+    """Constant-time-ish: always run Argon2 verify so an attacker cannot infer
+    whether an email is registered from the response-time delta."""
     user = await get_user_by_email(session, email)
-    if user is None or not verify_password(password, user.password_hash):
+    candidate_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
+    valid = verify_password(password, candidate_hash)
+    if user is None or not valid:
         raise InvalidCredentialsError
     return user
 
@@ -87,8 +93,6 @@ async def rotate_refresh(
     user_id = UUID(str(claims["sub"]))
     jti = str(claims["jti"])
     exp = int(claims["exp"])
-
-    from datetime import UTC, datetime
 
     remaining = exp - int(datetime.now(UTC).timestamp())
     ttl = max(remaining, 1)

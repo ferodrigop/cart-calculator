@@ -30,6 +30,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_users")),
         sa.UniqueConstraint("email", name=op.f("uq_users_email")),
+        sa.CheckConstraint("email = lower(email)", name=op.f("ck_users_email_lowercase")),
     )
     op.create_index(op.f("ix_users_email"), "users", ["email"], unique=False)
 

@@ -6,14 +6,22 @@ from uuid import UUID, uuid4
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from authlib.jose import JoseError, jwt
+from authlib.jose import JsonWebToken
+from authlib.jose.errors import ExpiredTokenError, JoseError
 
 from app.core.config import Settings
-from app.core.exceptions import InvalidTokenError
+from app.core.exceptions import InvalidTokenError, TokenExpiredError
 
 TokenType = Literal["access", "refresh"]
 
 _hasher = PasswordHasher()
+# Single-algorithm decoder closes the door on alg-confusion attacks if the
+# project ever adds RS256. Per backend/auth.md §2.
+_jwt = JsonWebToken(["HS256"])
+
+# Constant-time-ish baseline used when the user is missing during authentication
+# so that response time does not leak whether an email is registered.
+DUMMY_PASSWORD_HASH = _hasher.hash("baseline-not-a-real-password")
 
 
 def hash_password(plain: str) -> str:
@@ -34,7 +42,7 @@ def _now() -> int:
 
 
 def _encode(secret: str, claims: dict[str, Any], algorithm: str) -> str:
-    token = jwt.encode({"alg": algorithm}, claims, secret)
+    token = _jwt.encode({"alg": algorithm}, claims, secret)
     if isinstance(token, bytes):
         return token.decode("ascii")
     return str(token)
@@ -78,8 +86,10 @@ def decode_token(
     expected_type: TokenType,
 ) -> dict[str, Any]:
     try:
-        claims = jwt.decode(token, secret)
+        claims = _jwt.decode(token, secret)
         claims.validate(now=_now(), leeway=0)
+    except ExpiredTokenError as exc:
+        raise TokenExpiredError("token expired") from exc
     except JoseError as exc:
         raise InvalidTokenError("invalid token") from exc
     except Exception as exc:  # malformed token, etc.

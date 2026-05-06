@@ -40,7 +40,6 @@ async def _auth_error_handler(request: Request, exc: Exception) -> JSONResponse:
 
 
 async def _rate_limit_handler(request: Request, exc: Exception) -> JSONResponse:
-    cast(RateLimitExceeded, exc)
     return JSONResponse(status_code=429, content={"detail": "rate limit exceeded"})
 
 

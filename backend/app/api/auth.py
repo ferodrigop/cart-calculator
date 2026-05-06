@@ -13,7 +13,20 @@ from app.services import auth as auth_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-_settings = get_settings()
+
+# Slowapi accepts a callable for the limit string so that env-var / dependency
+# overrides of `Settings` take effect at request time rather than at decoration
+# time. Per backend/rate-limiting.md §4.
+def _login_limit() -> str:
+    return get_settings().rate_limit.auth_login
+
+
+def _refresh_limit() -> str:
+    return get_settings().rate_limit.auth_refresh
+
+
+def _register_limit() -> str:
+    return get_settings().rate_limit.auth_register
 
 
 @router.post(
@@ -21,7 +34,9 @@ _settings = get_settings()
     response_model=UserRead,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit(_register_limit)  # type: ignore[untyped-decorator]
 async def register(
+    request: Request,
     payload: UserRegister,
     session: SessionDep,
 ) -> UserRead:
@@ -34,7 +49,7 @@ async def register(
     response_model=TokenPair,
     status_code=status.HTTP_200_OK,
 )
-@limiter.limit(_settings.rate_limit.auth_login)  # type: ignore[untyped-decorator]
+@limiter.limit(_login_limit)  # type: ignore[untyped-decorator]
 async def login(
     request: Request,
     form: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -60,7 +75,7 @@ async def me(current: CurrentUser) -> UserRead:
     response_model=TokenPair,
     status_code=status.HTTP_200_OK,
 )
-@limiter.limit(_settings.rate_limit.auth_refresh)  # type: ignore[untyped-decorator]
+@limiter.limit(_refresh_limit)  # type: ignore[untyped-decorator]
 async def refresh(
     request: Request,
     payload: RefreshRequest,
