@@ -24,7 +24,7 @@ from app.core.config import get_settings
 from app.core.db import get_session
 from app.core.redis import get_redis
 from app.main import app
-from app.models import User  # noqa: F401  -- registers User table
+from app.models import User
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event

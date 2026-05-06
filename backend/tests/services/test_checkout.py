@@ -16,6 +16,8 @@ def _item(name: str, unit_price: str, quantity: int) -> CheckoutItem:
     [
         # empty cart yields zeros
         ([], "0.00", "0.00", "0.00", "0.00"),
+        # subtotal one cent under threshold — no discount
+        ([_item("a", "99.99", 1)], "99.99", "13.00", "0.00", "112.99"),
         # subtotal exactly $100 — no discount (rule: strictly > 100)
         ([_item("a", "100.00", 1)], "100.00", "13.00", "0.00", "113.00"),
         # subtotal one cent over — discount kicks in

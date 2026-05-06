@@ -9,7 +9,7 @@ class CheckoutItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(min_length=1, max_length=200)
-    unit_price: Decimal = Field(ge=Decimal("0"), max_digits=12, decimal_places=2)
+    unit_price: Decimal = Field(gt=Decimal("0"), max_digits=12, decimal_places=2)
     quantity: int = Field(ge=1)
 
 
