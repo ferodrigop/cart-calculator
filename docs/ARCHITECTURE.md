@@ -48,7 +48,7 @@ The whole stack runs from a single `docker-compose.yml`.
 
 ### Backend: FastAPI (Python 3.12)
 
-**Why:** The assignment emphasizes *clarity, correctness, and easy to extend*. FastAPI gives
+**Why:** The project emphasizes *clarity, correctness, and easy to extend*. FastAPI gives
 us automatic OpenAPI/Swagger docs, Pydantic-based validation, async support, and code that
 reads almost like the spec itself. The calculation logic is trivial in any language —
 language choice is about ergonomics and signal, not raw throughput.
@@ -87,8 +87,8 @@ standard pattern in the FastAPI docs. We hand-roll the small wrapper around
 
 **Rejected:**
 - **fastapi-users** — too much surface area for a 2-endpoint auth need.
-- **Auth0 / Clerk / Supabase** — outsourcing the interesting part; signals the wrong thing
-  in an interview.
+- **Auth0 / Clerk / Supabase** — outsourcing the interesting part; the goal here is to
+  understand the auth path end-to-end.
 
 ### Settings: pydantic-settings
 
@@ -141,8 +141,8 @@ spotlight stays on the backend.
 
 ## 3. Distributed Architecture
 
-The assignment requires that the solution **must work in a distributed architecture**.
-We satisfy this in three concrete ways:
+A guiding goal of this project is that the solution **must work in a distributed
+architecture**. We satisfy this in three concrete ways:
 
 1. **Stateless API replicas.** Two FastAPI containers run behind Nginx with
    `deploy.replicas: 2`. No request-affinity is required — any request can hit any replica.
@@ -154,7 +154,7 @@ We satisfy this in three concrete ways:
    to demonstrate correct shared-state behavior.
 
 This is the **minimum credible** distributed setup. Kafka, Celery, and Kubernetes would
-all be over-engineering for a take-home.
+all be over-engineering for an MVP at this scope.
 
 ---
 
@@ -198,7 +198,7 @@ discount tiers) without touching the HTTP layer.
 
 ## 5. Extensibility Notes
 
-The assignment specifies fixed rules (13% taxes, 10% discount over $100). The codebase is
+The current rules are fixed (13% taxes, 10% discount over $100). The codebase is
 structured so these rules are easy to evolve:
 
 - **Calculation engine** is a pure function in `services/checkout.py`, decoupled from
