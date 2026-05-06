@@ -87,6 +87,8 @@ services:
         condition: service_healthy
       api2:
         condition: service_healthy
+      frontend:
+        condition: service_started
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
       interval: 10s
@@ -97,11 +99,8 @@ services:
   frontend:
     build:
       context: ./frontend
-    ports:
-      - "5173:80"
-    depends_on:
-      nginx:
-        condition: service_healthy
+    # No port mapping — nginx is the single public entry on :80.
+    # Direct access during dev is still possible via `docker compose port frontend 80`.
 
 volumes:
   postgres_data:
