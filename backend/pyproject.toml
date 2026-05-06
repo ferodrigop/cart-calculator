@@ -18,6 +18,8 @@ dependencies = [
     "limits[redis]>=3.10",
     "redis>=5.0",
     "python-multipart>=0.0.9",
+    "email-validator>=2.0",
+    "greenlet>=3.0",
 ]
 
 [dependency-groups]
@@ -29,6 +31,7 @@ dev = [
     "asgi-lifespan>=2.1",
     "ruff>=0.7",
     "mypy>=1.11",
+    "fakeredis>=2.20",
 ]
 
 [build-system]
@@ -47,7 +50,7 @@ src = ["app", "tests"]
 select = ["E", "F", "I", "B", "UP", "SIM", "C4", "PT", "RUF", "ASYNC", "S", "N"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S105", "S106"]
+"tests/**" = ["S101", "S105", "S106", "S107"]
 "alembic/versions/**" = ["E501"]
 
 [tool.ruff.format]
@@ -60,7 +63,7 @@ files = ["app"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["slowapi.*", "authlib.*"]
+module = ["slowapi.*", "authlib.*", "fakeredis.*", "argon2.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
